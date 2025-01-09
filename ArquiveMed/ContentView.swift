@@ -14,8 +14,9 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                
                 // -- Custom Nav Bar
-                VStack(spacing: 4) {
+                VStack(spacing: 0) {
                     HStack {
                         Text("Clinica Drefahl")
                             .font(.title)
@@ -23,17 +24,24 @@ struct ContentView: View {
                         
                         Spacer()
                         
-                        Image(systemName: "person.crop.circle") // Profile Image Placeholder
+                        Image(systemName: "person.crop.circle")
                             .resizable()
                             .frame(width: 40, height: 40)
                     }
                     .padding([.horizontal, .top])
                     
-                    // Welcome, Fabio (under title)
+                    // Left-aligned welcome text
                     Text("Welcome, Fabio!")
                         .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
                         .padding(.bottom, 8)
                 }
+                
+                // Divider to visually separate nav bar from the rest
+                Divider()
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
                 
                 // -- Main Buttons
                 HStack(spacing: 16) {
@@ -66,14 +74,14 @@ struct ContentView: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.top, 8)
+                .padding(.bottom, 24) // More vertical space between buttons & next section
                 
                 // -- “View Patients” Section
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Image(systemName: "eye")
-                            .foregroundColor(.blue)
-                        Text("View Patients")
+                            .foregroundColor(.black)
+                        Text("Search Patients")
                             .font(.title2)
                             .fontWeight(.semibold)
                     }
@@ -95,13 +103,15 @@ struct ContentView: View {
                         Text("Date:")
                             .fontWeight(.semibold)
                         
-                        DatePicker("", selection: $startDate, displayedComponents: .date)
-                            .labelsHidden()
+                        Spacer()
                         
-                        Text(" - ")
-                        
-                        DatePicker("", selection: $endDate, displayedComponents: .date)
-                            .labelsHidden()
+                        HStack(spacing: 6) {
+                            DatePicker("", selection: $startDate, displayedComponents: .date)
+                                .labelsHidden()
+                            Text("-")
+                            DatePicker("", selection: $endDate, displayedComponents: .date)
+                                .labelsHidden()
+                        }
                     }
                     
                     // Segmented Picker
@@ -119,46 +129,62 @@ struct ContentView: View {
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(8)
-                .padding([.horizontal, .top])
+                .padding(.horizontal)
+                .padding(.bottom, 24) // Extra margin before "Patients Found"
                 
                 // -- “Patients Found” Section
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Image(systemName: "person.2")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.black)
                         Text("Patients Found")
                             .font(.title2)
                             .fontWeight(.semibold)
                     }
-                    .padding(.bottom, 4)
                     
-                    // Table Header
-                    HStack {
-                        Text("Patient Name")
-                            .fontWeight(.semibold)
-                        Spacer()
-                        Text("Registered Date")
-                            .fontWeight(.semibold)
-                        Spacer()
-                        Text("...")
-                            .fontWeight(.semibold)
-                    }
-                    .padding()
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(8)
-                    
-                    // Table Rows
+                    // Entire table in a single VStack
                     VStack(spacing: 0) {
+                        // Header row
+                        HStack {
+                            Text("Patient Name")
+                                .fontWeight(.semibold)
+                            Spacer()
+                            Text("Registered Date")
+                                .fontWeight(.semibold)
+                            Spacer()
+                            Text("...")
+                                .fontWeight(.semibold)
+                        }
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        
+                        // Divider between header & rows
+                        Divider()
+                        
+                        // Table rows
                         ForEach(patients, id: \.self) { patient in
                             HStack {
-                                Text(patient)
+                                Button(action: {
+                                    // Handle patient name tap
+                                }) {
+                                    Text(patient)
+                                        .foregroundColor(.primary)
+                                }
+                                .buttonStyle(.plain)
+                                
                                 Spacer()
                                 Text("04/07/03")
+                                
                                 Spacer()
-                                Image(systemName: "ellipsis")
-                                    .foregroundColor(.gray)
+                                Button(action: {
+                                    // Action menu for patient row
+                                }) {
+                                    Image(systemName: "ellipsis")
+                                        .foregroundColor(.gray)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .frame(height: 50)   // Make rows a bit taller
+                            .frame(height: 50) // Make rows a bit taller
                             .padding(.horizontal)
                             
                             Divider()
@@ -168,7 +194,6 @@ struct ContentView: View {
                     .cornerRadius(8)
                 }
                 .padding(.horizontal)
-                .padding(.top, 16)
                 
                 Spacer()
                 
