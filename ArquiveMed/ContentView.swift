@@ -17,8 +17,8 @@ struct ContentView: View {
     @State private var filterOption: String = "Both"
     
     // Date range
-    @State private var startDate = Date(timeIntervalSinceNow: -86400 * 7) // 1 week ago
-    @State private var endDate = Date()                                  // now
+    @State private var startDate = Date(timeIntervalSinceNow: -86400 * 365) // 1 week ago
+    @State private var endDate = Date(timeIntervalSinceNow: 86400 * 2)                                  // now
     
     // Example data
     @State private var patients: [Patient] = [
@@ -135,10 +135,11 @@ struct ContentView: View {
                             .cornerRadius(8)
                         }
                         .sheet(isPresented: $showSelectPatientPopup) {
-                            // In your real code, you'd show your SelectPatientPopup here
-                            Text("Placeholder for SelectPatientPopup")
-                                .presentationDetents([.large])
-                        }
+                            SelectPatientPopup(
+                                    showSelectPatientView: $showSelectPatientPopup,
+                                    allPatients: patients.map { $0.name }, // Extract names from your patients array
+                                    capturedImages: $capturedImages
+                                )                        }
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 24)
