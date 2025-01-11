@@ -1,35 +1,75 @@
 import SwiftUI
 
+// MARK: - Model
+struct Patient: Identifiable {
+    let id = UUID()
+    let name: String
+    let registrationDate: Date
+}
+
+// MARK: - ContentView
 struct ContentView: View {
+    
+    // Search text (for name)M
     @State private var searchText = ""
-    @State private var startDate = Date()
-    @State private var endDate = Date()
+    
+    // Segment control: "Both", "Name", or "Date"
     @State private var filterOption: String = "Both"
-    @State private var patients: [String] = [
-        "Alexander Valley",
-        "Alexander Valley",
-        "Alexander Valley"
+    
+    // Date range
+    @State private var startDate = Date(timeIntervalSinceNow: -86400 * 7) // 1 week ago
+    @State private var endDate = Date()                                  // now
+    
+    // Example data
+    @State private var patients: [Patient] = [
+        Patient(name: "Alexander Valley", registrationDate: Date(timeIntervalSinceNow: -86400 * 10)),
+        Patient(name: "Maria Gonzalez",   registrationDate: Date(timeIntervalSinceNow: -86400 * 3)),
+        Patient(name: "John Smith",       registrationDate: Date())
     ]
     
-    // For the custom popup
+    // Popup controls (from your original layout)
     @State private var showAddPatientView = false
-    
-    // For camera usage
+    @State private var showSelectPatientPopup = false
     @State private var showCamera = false
     @State private var capturedImages: [UIImage] = []
     
+    // Computed property for filtering
+    private var filteredPatients: [Patient] {
+        var results = patients
+        
+        // If filtering by name or both, apply name filter
+        if filterOption == "Name" || filterOption == "Both" {
+            if !searchText.isEmpty {
+                let lowerSearch = searchText.lowercased()
+                results = results.filter {
+                    $0.name.lowercased().contains(lowerSearch)
+                }
+            }
+        }
+        
+        // If filtering by date or both, apply date filter
+        if filterOption == "Date" || filterOption == "Both" {
+            results = results.filter {
+                $0.registrationDate >= startDate && $0.registrationDate <= endDate
+            }
+        }
+        
+        return results
+    }
+    
     var body: some View {
         ZStack {
-            // 1) Main content
+            
+            // Main content
             NavigationView {
                 VStack(spacing: 0) {
                     
                     // -- Custom Nav Bar
                     VStack(spacing: 0) {
                         HStack {
-                            // Search Button (left)
+                            // Search button (left)
                             Button(action: {
-                                // Handle search action
+                                // You can handle some search logic if needed
                             }) {
                                 Image(systemName: "magnifyingglass")
                                     .resizable()
@@ -59,7 +99,6 @@ struct ContentView: View {
                             .padding(.bottom, 8)
                     }
                     
-                    // Divider to visually separate nav bar from the rest
                     Divider()
                         .padding(.horizontal)
                         .padding(.bottom, 24)
@@ -81,13 +120,13 @@ struct ContentView: View {
                             .cornerRadius(8)
                         }
                         
-                        // 2) Open the camera and append images
+                        // Show SelectPatientPopup or camera
                         Button(action: {
-                            showCamera = true
+                            showSelectPatientPopup = true
                         }) {
                             HStack {
                                 Image(systemName: "camera")
-                                Text("Add Photos")
+                                Text("add photos")
                             }
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -95,15 +134,16 @@ struct ContentView: View {
                             .foregroundColor(.white)
                             .cornerRadius(8)
                         }
-                        // Present camera sheet
-                        .sheet(isPresented: $showCamera) {
-                            CameraPicker(images: $capturedImages)
+                        .sheet(isPresented: $showSelectPatientPopup) {
+                            // In your real code, you'd show your SelectPatientPopup here
+                            Text("Placeholder for SelectPatientPopup")
+                                .presentationDetents([.large])
                         }
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 24)
                     
-                    // -- “View Patients” Section
+                    // -- Search Section (Name, Date, Both)
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Image(systemName: "eye")
@@ -169,7 +209,7 @@ struct ContentView: View {
                                 .fontWeight(.semibold)
                         }
                         
-                        // Entire table in a single VStack
+                        // Table of filtered patients
                         VStack(spacing: 0) {
                             // Header row
                             HStack {
@@ -185,22 +225,22 @@ struct ContentView: View {
                             .padding()
                             .background(Color.blue.opacity(0.1))
                             
-                            // Divider between header & rows
                             Divider()
                             
                             // Table rows
-                            ForEach(patients, id: \.self) { patient in
+                            ForEach(filteredPatients) { patient in
                                 HStack {
                                     Button(action: {
                                         // Handle patient name tap
                                     }) {
-                                        Text(patient)
+                                        Text(patient.name)
                                             .foregroundColor(.primary)
                                     }
                                     .buttonStyle(.plain)
                                     
                                     Spacer()
-                                    Text("04/07/03")
+                                    // Format the registration date
+                                    Text(patient.registrationDate, style: .date)
                                     
                                     Spacer()
                                     Button(action: {
@@ -221,22 +261,6 @@ struct ContentView: View {
                         .cornerRadius(8)
                     }
                     .padding(.horizontal)
-                    
-                    // Show a preview of captured images (if you want)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(capturedImages, id: \.self) { img in
-                                Image(uiImage: img)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 100, height: 100)
-                                    .clipped()
-                                    .cornerRadius(8)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.vertical, 8)
-                    }
                     
                     Spacer()
                     
@@ -282,7 +306,7 @@ struct ContentView: View {
                 .navigationBarHidden(true)
             }
             
-            // 3) Dimmed background + popup for New Patient
+            // Dimmed background + popup for New Patient
             if showAddPatientView {
                 Color.black.opacity(0.35)
                     .ignoresSafeArea()
@@ -298,6 +322,7 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Preview
 #Preview {
     ContentView()
 }
